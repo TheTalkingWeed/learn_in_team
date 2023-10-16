@@ -1,0 +1,13 @@
+.p-card {
+  padding: 20px !important;
+  padding-bottom: 10px !important;
+}
+
+.p-card-content {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.p-card-title {
+  text-align: center !important;
+}

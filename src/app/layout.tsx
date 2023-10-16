@@ -4,7 +4,8 @@ import { Inter } from "next/font/google";
 import "@/theme/theme.css";
 import { PrimeReactProvider, PrimeReactContext } from "primereact/api";
 import Navbar from "@/components/Navbar";
-
+import "primeicons/primeicons.css";
+import Footer from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function RootLayout({
         <body className={inter.className}>
           <Navbar></Navbar>
           {children}
+          <Footer></Footer>
         </body>
       </html>
     </PrimeReactProvider>
