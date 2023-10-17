@@ -8,7 +8,6 @@ import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { Checkbox } from "primereact/checkbox";
 import Link from "next/link";
-
 export default function page() {
   const [firstname, setFirstName] = useState<string>();
   const [lastname, setLastName] = useState<string>();
@@ -37,6 +36,7 @@ export default function page() {
     "Electrician",
     "Salesperson",
   ];
+
   return (
     <div className="w-full min-h-screen bg-purple-100 flex flex-col items-center pt-20">
       <Card title="Sign in" className="w-fit">
