@@ -3,7 +3,6 @@ import Image from "next/image";
 import question from "@/assets/question.png";
 import questionbro from "@/assets/question-bro.png";
 
-import { useState } from "react";
 import Link from "next/link";
 
 export default function Home() {
@@ -26,16 +25,16 @@ export default function Home() {
     <div className="min-h-screen w-full bg-purple-100 grid grid-cols-1 px-32 py-16 gap-y-16 pb-44">
       <div className="w-full flex flex-col items-center gap-y-5 my-6 ">
         <h1 className="font-bold text-7xl tracking-wider">
-          Welcome to CoopLearn
+          Welcome to LearnInTeam
         </h1>
         <h1 className="tracking-widest">Be clever but together</h1>
       </div>
       <div className="grid grid-cols-2 place-items-center h-fit">
         <div className="grid grid-cols-1 pt-24">
-          <h1 className="font-bold text-4xl mb-5">What is CoopLearn?</h1>
+          <h1 className="font-bold text-4xl mb-5">What is LearnInTeam?</h1>
           <p className="text-lg leading-9">
-            CoopLearn is the ultimate platform for everyone to collaborate and
-            learn together. With CoopLearn, you can post your questions and
+            LearnInTeam is the ultimate platform for everyone to collaborate and
+            learn together. With LearnInTeam, you can post your questions and
             receive answers from a community of experts and enthusiasts. Join
             now and take your learning experience to the next level!
           </p>
@@ -71,7 +70,7 @@ export default function Home() {
               </div>
             </h1>
             <p className="text-lg leading-9 ">
-              Then CoopLearn is the perfect platform for you to share your
+              Then LearnInTeam is the perfect platform for you to share your
               knowledge, answer questions, and collaborate with others in your
               field. Join our community to connect, learn, and contribute to a
               wealth of collective knowledge in yout area of expertise.
