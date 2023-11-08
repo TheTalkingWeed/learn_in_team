@@ -88,7 +88,7 @@ export default function page() {
             title: title,
             topic_id: topics.find((t) => t.title === topic)?.id,
             posted_user_id: user.uid,
-            posted_time: Date.now(),
+            posted_time: new Date(),
             up_voted_by: [],
             down_voted_by: [],
           })
