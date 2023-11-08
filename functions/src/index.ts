@@ -50,6 +50,7 @@ app.post("/api/questions", (req: any, res: any) => {
         .doc("/" + req.body.id + "/")
         .create({
           id: req.body.id,
+          title: req.body.title,
           text: req.body.text,
           topic_id: req.body.topic_id,
           posted_user_id: req.body.posted_user_id,
