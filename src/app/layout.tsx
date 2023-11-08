@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import "primeicons/primeicons.css";
 import Footer from "@/components/Footer";
 import { AuthContextProvider } from "./context/AuthContext";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({
@@ -18,7 +19,7 @@ export default function RootLayout({
   return (
     <PrimeReactProvider>
       <html lang="en">
-        <title>Cooplearn</title>
+        <title>Learn in team</title>
         <link
           rel="icon"
           href="./favicon/favicon.ico"

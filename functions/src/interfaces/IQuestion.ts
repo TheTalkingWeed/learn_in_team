@@ -1,5 +1,6 @@
 export default interface IQuestion {
   id: number;
+  title: string;
   text: string;
   topic_id: Array<number>;
   posted_user_id: number;

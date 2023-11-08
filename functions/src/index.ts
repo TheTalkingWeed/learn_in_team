@@ -1,6 +1,7 @@
 import ITopic from "./interfaces/ITopic";
 import IQuestion from "./interfaces/IQuestion";
 import IAnswer from "./interfaces/IAnswer";
+import IUser from "./interfaces/IUser";
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
@@ -26,7 +27,9 @@ app.post("/api/topics", (req: any, res: any) => {
         .collection("topics")
         .doc("/" + req.body.id + "/")
         .create({
+          id: req.body.id,
           title: req.body.title,
+          parent_id: req.body.parent_id,
         });
 
       return res.status(200).send();
@@ -46,6 +49,7 @@ app.post("/api/questions", (req: any, res: any) => {
         .collection("questions")
         .doc("/" + req.body.id + "/")
         .create({
+          id: req.body.id,
           text: req.body.text,
           topic_id: req.body.topic_id,
           posted_user_id: req.body.posted_user_id,
@@ -70,6 +74,7 @@ app.post("/api/answers", (req: any, res: any) => {
         .collection("answers")
         .doc("/" + req.body.id + "/")
         .create({
+          id: req.body.id,
           text: req.body.text,
           question_id: req.body.question_id,
           answered_user_id: req.body.answered_user_id,
@@ -77,6 +82,32 @@ app.post("/api/answers", (req: any, res: any) => {
           approved: req.body.approved,
           up_voted_by: req.body.up_voted_by,
           down_voted_by: req.body.down_voted_by,
+        });
+
+      return res.status(200).send();
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  })();
+});
+
+//user
+app.post("/api/users", (req: any, res: any) => {
+  (async () => {
+    try {
+      await db
+        .collection("users")
+        .doc("/" + req.body.id + "/")
+        .create({
+          id: req.body.id,
+          email: req.body.email,
+          first_name: req.body.first_name,
+          last_name: req.body.last_name,
+          username: req.body.username,
+          title: req.body.title,
+          gender: req.body.gender,
+          born_date: req.body.born_date,
         });
 
       return res.status(200).send();
@@ -102,6 +133,7 @@ app.get("/api/topics", (req: any, res: any) => {
           response.push({
             id: doc.id,
             title: doc.data().title,
+            parent_id: doc.data().parent_id,
           });
         }
 
@@ -145,6 +177,7 @@ app.get("/api/questions", (req: any, res: any) => {
         for (let doc of docs) {
           response.push({
             id: doc.id,
+            title: doc.data().title,
             text: doc.data().text,
             topic_id: doc.data().topic_id,
             posted_user_id: doc.data().posted_user_id,
@@ -194,6 +227,7 @@ app.get("/api/questions_by_topic/:id", (req: any, res: any) => {
           if (parseInt(doc.data().topic_id) === parseInt(topic_id)) {
             response.push({
               id: doc.id,
+              title: doc.data().title,
               text: doc.data().text,
               topic_id: doc.data().topic_id,
               posted_user_id: doc.data().posted_user_id,
@@ -230,6 +264,7 @@ app.get("/api/questions_by_user/:id", (req: any, res: any) => {
           ) {
             response.push({
               id: doc.id,
+              title: doc.data().title,
               text: doc.data().text,
               topic_id: doc.data().topic_id,
               posted_user_id: doc.data().posted_user_id,
@@ -322,6 +357,41 @@ app.get("/api/answers_by_question/:id", (req: any, res: any) => {
               down_voted_by: doc.data().down_voted_by,
             });
           }
+        }
+
+        return response;
+      });
+
+      return res.status(200).send(response);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  })();
+});
+
+//Get users
+app.get("/api/users", (req: any, res: any) => {
+  (async () => {
+    try {
+      const document = db.collection("users");
+      let response: Array<IUser> = [];
+
+      await document.get().then((querySnapshot: any) => {
+        let docs = querySnapshot.docs;
+
+        for (let doc of docs) {
+          response.push({
+            id: doc.id,
+            email: doc.data().email,
+            first_name: doc.data().first_name,
+            last_name: doc.data().last_name,
+            username: doc.data().username,
+            title: doc.data().title,
+            profile_picture: doc.data().profile_picture,
+            gender: doc.data().gender,
+            born_date: doc.data().born_date,
+          });
         }
 
         return response;

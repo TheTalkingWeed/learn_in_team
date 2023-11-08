@@ -7,22 +7,38 @@ import { Checkbox } from "primereact/checkbox";
 import React, { useState } from "react";
 import "../../styles/login.css";
 import { UserAuth } from "../context/AuthContext";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function login() {
   const [email, setEmail] = useState<string>();
   const [password, setPassword] = useState<string>();
   const [stayLoggedIn, setStayLoggedIn] = useState<boolean>(false);
   const { googleSignIn } = UserAuth();
-
-  const handleSignIn = async () => {
+  const auth = getAuth();
+  const handleGoogleSignIn = async () => {
     try {
       await googleSignIn();
     } catch (err) {
       console.log(err);
     }
   };
+
+  function handleSignIn() {
+    console.log("asd");
+    if (email && password)
+      signInWithEmailAndPassword(auth, email, password)
+        .then((uc) => {
+          const user = uc.user;
+          console.log(user.uid);
+        })
+        .catch((err) => {
+          const errorCode = err.code;
+          const errorMessage = err.message;
+        });
+  }
+
   return (
-    <div className="w-full min-h-screen bg-purple-100 flex flex-col items-center pt-36">
+    <div className="w-full min-h-screen bg-purple-100 flex flex-col items-center py-20">
       <Card title="Login" className="w-[500px]">
         <span className="p-input-icon-left w-full mb-7">
           <i className="pi pi-at" />
@@ -52,12 +68,19 @@ export default function login() {
             Stay logged in
           </label>
         </div>
-        <Button label="Log in" className="mb-4" />
+        <Button
+          label="Log in"
+          className="mb-4"
+          onClick={() => handleSignIn()}
+        />
         <div className="w-full flex flex-col justify-center items-center mb-5">
           <p>or Login with</p>
           <div className="flex flex-row my-2 gap-x-3">
             {" "}
-            <i className="pi pi-google cursor-pointer" onClick={handleSignIn} />
+            <i
+              className="pi pi-google cursor-pointer "
+              onClick={handleGoogleSignIn}
+            />
             <i className="pi pi-facebook cursor-pointer" />
             <i className="pi pi-github cursor-pointer" />
           </div>

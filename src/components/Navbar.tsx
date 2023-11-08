@@ -23,7 +23,7 @@ export default function Navbar() {
           className="text-3xl font-bold text-white tracking-widest flex flex-row items-center"
         >
           <Image src={logo} alt="logo" width={50} className="cursor-pointer" />
-          CoopLearn
+          LearnInTeam
         </Link>
       </div>
       <div className=" flex flex-row h-11">
