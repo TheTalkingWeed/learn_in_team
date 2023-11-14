@@ -10,7 +10,7 @@ export default function page() {
   const [topics, setTopics] = useState<Array<ITopic>>();
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5001/cooplearn-auth/us-central1/app/api/topics")
+      .get("/api/topics")
       .then((res) => {
         const data = res.data;
         setTopics(data);
