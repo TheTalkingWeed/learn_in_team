@@ -406,6 +406,22 @@ app.get("/api/users", (req: any, res: any) => {
   })();
 });
 
+//Get user by id
+
+app.get("/api/users/:id", (req: any, res: any) => {
+  (async () => {
+    try{
+      const document = db.collection("users").doc(req.params.id);
+      let resData = await document.get();
+      let response = resData.data();
+      return res.status(200).send(response);
+    }catch(error){
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  });
+});
+
 //Delete
 //Delete topic
 app.delete("/api/topics/:id", (req: any, res: any) => {

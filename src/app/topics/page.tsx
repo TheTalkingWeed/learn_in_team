@@ -16,6 +16,7 @@ export default function page() {
         setTopics(data);
       })
       .catch((err) => console.log(err));
+      
   }, []);
   return (
     <div className="w-full min-h-screen">
