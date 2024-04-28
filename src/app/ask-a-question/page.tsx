@@ -51,7 +51,7 @@ export default function page() {
       .catch((err) => {
         showError("Cant get topics.");
       });
-
+      setLoading(false)
     
   }, []);
 

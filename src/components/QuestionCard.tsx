@@ -155,8 +155,6 @@ export default function QuestionCard(props: any) {
   
 
 
-
-
   
   
 
