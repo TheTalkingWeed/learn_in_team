@@ -2,9 +2,9 @@ export default interface IQuestion {
   id: number;
   title: string;
   text: string;
-  topic_id: Array<number>;
-  posted_user_id: number;
+  topic_id: number;
+  posted_user_id: string;
   posted_time: Date;
-  up_voted_by: Array<number>;
-  down_voted_by: Array<number>;
+  up_voted_by:Array<string> ;
+  down_voted_by: Array<string>;
 }

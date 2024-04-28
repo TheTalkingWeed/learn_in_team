@@ -47,7 +47,6 @@ export default function Page() {
   function getThePostedUser(question: IQuestion): IUser  | undefined{
     let user : IUser | undefined= {} as IUser;
     user = users.find((u) => u.id === question.posted_user_id.toString());
-console.log(user);
     return user
   }
   return (

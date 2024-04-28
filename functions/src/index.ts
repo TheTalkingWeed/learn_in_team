@@ -471,5 +471,30 @@ app.delete("/api/answers/:id", (req: any, res: any) => {
 });
 
 //Update
+app.put("/api/questions/:id", (req: any, res: any) => {
+  (async () => {
+    try {
+
+      const document = db.collection('questions').doc(req.params.id)
+
+      await document.update({
+        id: req.body.id,
+          title: req.body.title,
+          text: req.body.text,
+          topic_id: req.body.topic_id,
+          posted_user_id: req.body.posted_user_id,
+          posted_time: req.body.posted_time,
+          up_voted_by: req.body.up_voted_by,
+          down_voted_by: req.body.down_voted_by, 
+      })
+      
+      return res.status(200).send();
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  })();
+});
+
 
 exports.app = functions.https.onRequest(app);

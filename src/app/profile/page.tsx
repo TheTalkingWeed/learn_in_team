@@ -14,7 +14,6 @@ export default function page() {
     };
     checkAuthentication();
   }, [user]);
-  console.log(user);
   return (
     <div className="min-h-screen bg-purple-100">
       {loading ? (

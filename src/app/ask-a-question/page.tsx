@@ -52,16 +52,7 @@ export default function page() {
         showError("Cant get topics.");
       });
 
-    axios
-      .get("/api/questions")
-      .then((res) => {
-        const data = res.data;
-        setQuestions(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        showError("Cant get questions.");
-      });
+    
   }, []);
 
   function generateQId(): number {
