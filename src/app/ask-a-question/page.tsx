@@ -49,10 +49,21 @@ export default function page() {
         setTopics(data);
       })
       .catch((err) => {
-        showError("Cant get topics.");
+        showError("Can't get topics.");
       });
       setLoading(false)
     
+      axios
+      .get("/api/questions")
+      .then((res) => {
+        const data = res.data;
+        setQuestions(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        showError("Cant get questions.");
+      });
+
   }, []);
 
   function generateQId(): number {
@@ -94,7 +105,7 @@ export default function page() {
           })
           .catch((err) => {
             console.log(err);
-            showError("Cant post question");
+            showError("Can't post question");
           });
       }
     }

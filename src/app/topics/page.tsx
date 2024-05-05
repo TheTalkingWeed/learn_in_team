@@ -8,7 +8,9 @@ import axios from "axios";
 
 export default function page() {
   const [topics, setTopics] = useState<Array<ITopic>>();
+  const [loading,setLoading] = useState<boolean>(false);
   useEffect(() => {
+    setLoading(true)
     axios
       .get("/api/topics")
       .then((res) => {
@@ -16,10 +18,14 @@ export default function page() {
         setTopics(data);
       })
       .catch((err) => console.log(err));
-      
+      setLoading(false)
   }, []);
+
+
   return (
-    <div className="w-full min-h-screen">
+    <div>
+      {loading ? (<h1>Loading...</h1>) : (
+      <div className="w-full min-h-screen">
       <h1 className="text-4xl my-9 w-fit mx-auto font-bold tracking-wider">
         Topics
       </h1>
@@ -30,6 +36,9 @@ export default function page() {
           topics.map((t) => <TopicCard title={t.title} key={t.id} topic={t} />)
         )}
       </div>
+    </div>)
+
+      }
     </div>
   );
 }
