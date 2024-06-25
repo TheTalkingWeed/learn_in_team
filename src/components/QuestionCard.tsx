@@ -16,10 +16,7 @@ import { useRouter } from 'next/navigation';
 
 export default function QuestionCard(props: any) {
   const router = useRouter()
-
-
   const toast = useRef<Toast>(null);
-
   const questionid : number =  props.questionid;
   const user :IUser= props.user
   const [question, setQuestion] = useState<IQuestion>(props.question);
@@ -29,7 +26,20 @@ export default function QuestionCard(props: any) {
   const [voteText,setVoteText] = useState<string>();
   const [answerFormVisible,setAnswerFormVisible] = useState<boolean>(false);
   const [answerText,setAnswerText] = useState<string>("");
-
+  const months = [
+    'January', 
+    'February', 
+    'March', 
+    'April', 
+    'May', 
+    'June', 
+    'July', 
+    'August', 
+    'September', 
+    'October', 
+    'November', 
+    'December'
+  ];
 
 
   const showError = (mess: string) => {
@@ -71,73 +81,6 @@ export default function QuestionCard(props: any) {
       )
   },[,answerFormVisible])
   
-
-
-  function handleDownVote(userId: string) {
-    if (user){
-    // Check if the user has already downvoted the question
-
-      if (question.down_voted_by.includes(userId)) {
-        // If yes, update the state by removing the user ID from the down_voted_by array
-        setQuestion(prevQuestion => ({
-          ...prevQuestion,
-          down_voted_by: prevQuestion.down_voted_by.filter(id => id !== userId),
-        }));
-      } else {
-        // If not, check if the user has upvoted the question
-        if (question.up_voted_by.includes(userId)) {
-          // If yes, remove the upvote before adding the downvote
-          setQuestion(prevQuestion => ({
-            ...prevQuestion,
-            up_voted_by: prevQuestion.up_voted_by.filter(id => id !== userId),
-            down_voted_by: [...prevQuestion.down_voted_by, userId],
-          }));
-        } else {
-          // If not, update the state by adding the user ID to the down_voted_by array
-          setQuestion(prevQuestion => ({
-            ...prevQuestion,
-            down_voted_by: [...prevQuestion.down_voted_by, userId],
-          }));
-        }
-      }
-
-    }else if (!user){
-      showMess("You must be logged in to downvote!")
-    }
-  }
-  function handleUpVote(userId: string) {
-    if(user){
-
-      // Check if the user has already upvoted the question
-      if (question.up_voted_by.includes(userId)) {
-        // If yes, update the state by removing the user ID from the up_voted_by array
-        setQuestion(prevQuestion => ({
-          ...prevQuestion,
-          up_voted_by: prevQuestion.up_voted_by.filter(id => id !== userId),
-        }));
-      } else {
-        // If not, check if the user has downvoted the question
-        if (question.down_voted_by.includes(userId)) {
-          // If yes, remove the downvote before adding the upvote
-          setQuestion(prevQuestion => ({
-            ...prevQuestion,
-            down_voted_by: prevQuestion.down_voted_by.filter(id => id !== userId),
-            up_voted_by: [...prevQuestion.up_voted_by, userId],
-          }));
-        } else {
-          // If not, update the state by adding the user ID to the up_voted_by array
-          setQuestion(prevQuestion => ({
-            ...prevQuestion,
-            up_voted_by: [...prevQuestion.up_voted_by, userId],
-          }));
-        }
-      }
-    }else if(!user){
-      showMess("You must be logged in to upvote!")
-
-    }
-  }
-
   function generateAId(): number {
     return allAnswers.length + 1
   }
@@ -174,57 +117,11 @@ export default function QuestionCard(props: any) {
     }
   }
 
-
-  
-  useEffect(() => {
-
-    axios.put("/api/questions/"+ question.id,{
-      id: question.id,
-      text: question.text,
-      title: question.title,
-      topic_id: question.topic_id,
-      posted_user_id: question.posted_user_id,
-      posted_time: question.posted_time,
-      up_voted_by: question.up_voted_by,
-      down_voted_by: question.down_voted_by,
-  })
-  },[
-    question.up_voted_by
-  ])
-
-  useEffect(() => {
-
-    axios.put("/api/questions/"+ question.id,{
-      id: question.id,
-      text: question.text,
-      title: question.title,
-      topic_id: question.topic_id,
-      posted_user_id: question.posted_user_id,
-      posted_time: question.posted_time,
-      up_voted_by: question.up_voted_by,
-      down_voted_by: question.down_voted_by,
-    })
-
-  },[
-      question.down_voted_by
-  ])
- 
-  useEffect(() => {
-    if(question.up_voted_by.includes(user.id)){
-      showMess("You successfully upvoted this post!")
-      setVoteText("You upvoted this post")
-    } else if (question.down_voted_by.includes(user.id)){
-      showMess("You successfully downvoted this post!")
-      setVoteText("You downvoted this post")
-    } else setVoteText("")
-  },[question.up_voted_by,question.down_voted_by])
-  
-
-
-  
-  
-
- 
+  function getYMDForQuestion(){
+    let date : Date = new Date(question.posted_time)
+    
+    return date.getFullYear() + ". " + months[date.getMonth()] + " " + date.getDate() +"."
+  }
 
   return (
     <div className="w-[80%] flex flex-col bg-slate-300 h-fit p-5 gap-y-4">
@@ -233,24 +130,14 @@ export default function QuestionCard(props: any) {
         <>
         <div>
 
-          <div className="flex flex-row gap-x-6 items-center">
-            <div className="flex flex-col items-center justify-center gap-y-3">
-              <div className="flex flex-col text-center">
-                <span >{question.up_voted_by.length}</span>
-                <i className={`pi pi-chevron-up cursor-pointer`} onClick={(e) => handleUpVote(user.id)}/>
-              </div> 
-                <div className="flex flex-col text-center">
-                  <i className="pi pi-chevron-down cursor-pointer" onClick={(e) => handleDownVote(user.id)}/>
-                <span >{question.down_voted_by.length}</span>
-                </div>
-              </div>
-
+          <div className="flex flex-row gap-x-6 items-center justify-between px-5 py-4">
               <div className="flex flex-col">
                 <h1 className="font-bold text-2xl text-left">{question.title}</h1>
                 <p>by {user.username}</p>
-
               </div>
-              <div className="ml-auto">{voteText}</div>
+              <div className="self-end font-bold ">
+                <span className="font-normal">Posted time:</span> {getYMDForQuestion()}
+              </div>
           </div>
           <div className="w-full bg-slate-200 p-5">{question.text}</div>
           <div className="w-full flex py-5">
@@ -261,7 +148,7 @@ export default function QuestionCard(props: any) {
               allAnswers ? (
                 allAnswers.filter((e) => e.question_id == question.id)
                 .slice().sort((a, b) =>   new Date(b.answered_date).getTime() - new Date(a.answered_date).getTime())
-                .map((a) => <Answer answer={a}/>)
+                .map((a) => <Answer answer={a} user={user}/>)
               
               ) :<></>
             }

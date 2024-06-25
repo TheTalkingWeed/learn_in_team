@@ -496,5 +496,31 @@ app.put("/api/questions/:id", (req: any, res: any) => {
   })();
 });
 
+//uopdate answer
+app.put("/api/answers/:id", (req: any, res: any) => {
+  (async () => {
+    try {
+
+      const document = db.collection('answers').doc(req.params.id)
+
+      await document.update({
+        id: req.body.id,
+        text: req.body.text,
+        question_id: req.body.question_id,
+        answered_user_id: req.body.answered_user_id,
+        answered_date: req.body.answered_date,
+        approved: req.body.approved,
+        up_voted_by: req.body.up_voted_by,
+        down_voted_by: req.body.down_voted_by, 
+      })
+      
+      return res.status(200).send();
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  })();
+});
+
 
 exports.app = functions.https.onRequest(app);
