@@ -421,6 +421,43 @@ app.get("/api/users/:id", (req: any, res: any) => {
     }
   });
 });
+//Get user by email
+app.get("/api/user_by_email/:email", async (req: any, res: any) => {
+  try {
+    const document = db.collection("users");
+    const email = req.params.email;
+    let response: IUser | any = null;
+
+    const querySnapshot = await document.get();
+    const docs = querySnapshot.docs;
+
+    for (let doc of docs) {
+      if (doc.data().email === email) {
+        response = {
+          id: doc.id,
+          email: doc.data().email,
+          first_name: doc.data().first_name,
+          last_name: doc.data().last_name,
+          username: doc.data().username,
+          title: doc.data().title,
+          profile_picture: doc.data().profile_picture,
+          gender: doc.data().gender,
+          born_date: doc.data().born_date
+        };
+        break;
+      }
+    }
+
+    if (response) {
+      return res.status(200).send(response);
+    } else {
+      return res.status(404).send({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+});
 
 //Delete
 //Delete topic

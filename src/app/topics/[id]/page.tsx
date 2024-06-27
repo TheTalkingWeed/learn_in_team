@@ -7,15 +7,14 @@ import React, { useEffect, useState } from "react";
 import IQuestion from "../../../../functions/src/interfaces/IQuestion";
 import QuestionCard from "@/components/QuestionCard";
 import IUser from "../../../../functions/src/interfaces/IUser";
-import { get } from "http";
-
+import { UserAuth } from "@/app/context/AuthContext";
 export default function Page() {
   const [questions, setQuestions] = useState<Array<IQuestion>>([]);
   const [topic, setTopic] = useState<ITopic>({} as ITopic);
   const [loading, setLoading] = useState<boolean>(false);
   const [users,setUsers] = useState<Array<IUser>>([]);
   const params = useParams();
-
+  const {user} = UserAuth()
   useEffect(() => {
     setLoading(true);
     axios
@@ -57,7 +56,7 @@ export default function Page() {
         <>
           <h1 className="text-4xl font-bold tracking-wider">{topic.title}</h1>
           {questions.map((q) => (
-            <QuestionCard question={q} user={getThePostedUser(q)}/>
+            <QuestionCard question={q} user={getThePostedUser(q) } logged_in_user={user}/>
           ))}
         </>
       ) : (

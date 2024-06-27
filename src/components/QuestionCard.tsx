@@ -13,19 +13,20 @@ import Answer from "../components/Answer"
 import { Button } from 'primereact/button';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { useRouter } from 'next/navigation';
+import { UserAuth } from "@/app/context/AuthContext";
 
 export default function QuestionCard(props: any) {
   const router = useRouter()
   const toast = useRef<Toast>(null);
   const questionid : number =  props.questionid;
-  const user :IUser= props.user
+  const posted_user :IUser= props.user
+  const logged_in_user = props.logged_in_user
   const [question, setQuestion] = useState<IQuestion>(props.question);
-  const [answersForQuestion, setAnswersForQuestion] = useState<Array<IAnswer>>([]);
-  const [allAnswers, setAllAnswers] = useState<Array<IAnswer>>([]);
+  const [allAnswers, setAllAnswers] = useState<Array<IAnswer>>([]); // az adott kérdéshez a válaszok
   const [loading, setLoading] = useState<boolean>();
-  const [voteText,setVoteText] = useState<string>();
   const [answerFormVisible,setAnswerFormVisible] = useState<boolean>(false);
   const [answerText,setAnswerText] = useState<string>("");
+  const [showAnswers,setShowAsnwers] = useState<boolean>(false);
   const months = [
     'January', 
     'February', 
@@ -62,14 +63,6 @@ export default function QuestionCard(props: any) {
   
   useEffect(() => {
     setLoading(true)
-    
-    axios.get("/api/answers/" + props.question.id).then((res) => {
-      const data = res.data;
-      setAnswersForQuestion(data)
-    })
-    .catch((err) => {
-      showError("Can't get answers")
-    })
       axios.get("/api/answers").then((res) => {
         const data = res.data;
         setAllAnswers(data)
@@ -88,17 +81,20 @@ export default function QuestionCard(props: any) {
   function toggleAnswerFormVisible(){
     setAnswerFormVisible(!answerFormVisible);
   }
+  function toggleAnswersVisible(){
+    setShowAsnwers(!showAnswers);
+  }
   
   async function postAnswer(){
     
-    if (user){
+    if (posted_user){
       
 
       await axios.post("/api/answers",{
         id: generateAId() ,
         text: answerText,
         question_id: question.id,
-        answered_user_id: user.id,
+        answered_user_id: posted_user.id,
         answered_date: new Date(),
         approved: false,
         up_voted_by: [],
@@ -124,40 +120,43 @@ export default function QuestionCard(props: any) {
   }
 
   return (
-    <div className="w-[80%] flex flex-col bg-slate-300 h-fit p-5 gap-y-4">
+    <div className="w-[80%] flex flex-col bg-slate-300 h-fit p-5 gap-y-4 rounded-lg">
       {
         loading ? (<Skeleton width="100%"></Skeleton>) : (
         <>
-        <div>
+        <div className="flex flex-col">
 
           <div className="flex flex-row gap-x-6 items-center justify-between px-5 py-4">
               <div className="flex flex-col">
                 <h1 className="font-bold text-2xl text-left">{question.title}</h1>
-                <p>by {user.username}</p>
+                <p>by {posted_user.username}</p>
               </div>
               <div className="self-end font-bold ">
                 <span className="font-normal">Posted time:</span> {getYMDForQuestion()}
               </div>
           </div>
-          <div className="w-full bg-slate-200 p-5">{question.text}</div>
-          <div className="w-full flex py-5">
+          <div className="w-full bg-slate-200 p-5 rounded-lg">{question.text}</div>
+          <div className="w-fit flex gap-5 flex-row py-5 self-end">
             <Button label="Write an answer" className=" ml-auto" onClick={toggleAnswerFormVisible}></Button>
+            <Button label={showAnswers ? "Hide answers" : "Show answers"} className=" ml-auto" onClick={toggleAnswersVisible}></Button>
           </div>
             <div className="flex flex-col">
+              {answerFormVisible ? <div className="flex flex-col gap-y-6 w-full">
+                <InputTextarea value={answerText} autoResize={true} onChange={
+                  (e: React.ChangeEvent<HTMLTextAreaElement>) => setAnswerText(e.target.value)} rows={5} />
+                <Button onClick={() => postAnswer()} label="Submit answer" className="w-fit mx-auto"></Button>
+              </div> : <></>}
+              
             {
-              allAnswers ? (
+              showAnswers ? 
+              (allAnswers.length > 0 ?  (
                 allAnswers.filter((e) => e.question_id == question.id)
                 .slice().sort((a, b) =>   new Date(b.answered_date).getTime() - new Date(a.answered_date).getTime())
-                .map((a) => <Answer answer={a} user={user}/>)
+                .map((a) => <Answer answer={a} posted_user={posted_user}/>)
               
-              ) :<></>
+              ) :<></>) : <></>
             }
             </div>
-            {answerFormVisible ? <div className="flex flex-col gap-y-6 w-full">
-              <InputTextarea value={answerText} autoResize={true} onChange={
-                (e: React.ChangeEvent<HTMLTextAreaElement>) => setAnswerText(e.target.value)} rows={5} />
-              <Button onClick={() => postAnswer()} label="Submit answer" className="w-fit mx-auto"></Button>
-            </div> : <></>}
         </div>
         </>
         )

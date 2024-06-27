@@ -31,7 +31,7 @@ export default function page() {
   const [hasLowercase, setHasLowercase] = useState<boolean>(false);
   const [hasNumber, setHasNumber] = useState<boolean>(false);
   const titles: Array<string> = ["Student", "Teacher"];
-  const genders: Array<string> = ["Male", "Female", "Wallmart bag"];
+  const genders: Array<string> = ["Male", "Female"];
   const toast = useRef<Toast>(null);
   const today: Date = new Date();
   const authEP = getAuth();
@@ -205,7 +205,7 @@ export default function page() {
                     fontWeight: 700,
                   }}
                 ></i>
-                Minimum characters
+                Minimum 8 characters
               </li>
               <li>
                 <i
