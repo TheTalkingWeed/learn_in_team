@@ -22,14 +22,15 @@ export default function page() {
     checkAuthentication();
   }, [user]);
 
-  function getUserInformation(email : string) : IUser | any{
-    axios.get("/app/api/user_by_email/" + email).then((res) => {
+  function getUserInformation(id : string) : IUser | any{
+    axios.get("/api/users/" + id).then((res) => {
       const data = res.data
       return data
     }).catch((err) => {
       console.log("Error, cant get user")
     }).finally(() => {return null})
   }
+
   return (
     <div className="min-h-screen bg-purple-100">
       {loading ? (
@@ -41,7 +42,7 @@ export default function page() {
            <TabView>
                 <TabPanel header="Profile informations">
                     <p className="m-0">
-                        {user.email ? getUserInformation(user.email) : <></>}
+                        {user.email ? getUserInformation(user.uid) : <></>}
                     </p>
                 </TabPanel>
                 <TabPanel header="Your questions">

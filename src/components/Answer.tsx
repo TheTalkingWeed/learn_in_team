@@ -44,7 +44,7 @@ export default function Answer(props : any){
         });
       };
 
-    function handleDownVote(userId: string) {
+    function handleDownVote(userId: number) {
         if (posted_user){
         // Check if the user has already downvoted the question
     
@@ -76,7 +76,7 @@ export default function Answer(props : any){
           showMess("You must be logged in to downvote!")
         }
       }
-      function handleUpVote(userId: string) {
+      function handleUpVote(userId: number) {
         if(posted_user){
     
           // Check if the user has already upvoted the question
@@ -197,25 +197,17 @@ export default function Answer(props : any){
                 <span>{props.answer.text}</span>
             </div>
             {
-                approved ? 
+              (posted_user.email === user.email) ? 
                 <div className="ml-auto self-end">
-                    <h1 className="flex cursor-pointer self-end ml-auto bg-[#e9d5ff] px-3 rounded-lg font-bold select-none relative group" onClick={approveAnswer}>
-                    ✘
-                    <span className="absolute bottom-full mb-2 hidden w-max bg-black text-white text-xs rounded py-1 px-2 group-hover:block">
-                        Disapprove Answer
-                    </span>
-                    </h1>
-                </div>
-                 :
-                (posted_user.email === user.email) ? <div className="ml-auto self-end">
-                <h1 className="flex cursor-pointer self-end ml-auto bg-[#e9d5ff] px-3 rounded-lg font-bold select-none relative group " onClick={approveAnswer}>
-                ✓
-                <span className="absolute bottom-full mb-2 hidden w-max bg-black text-white text-xs rounded py-1 px-2 group-hover:block">
-                    Approve Answer
-                </span>
-                </h1>
-            </div> : <></>
-                
+                  <h1 className="flex cursor-pointer self-end ml-auto bg-[#e9d5ff] px-3 rounded-lg font-bold select-none relative group " onClick={approveAnswer}>
+                    {approved ? "✘" : "✓"}
+                      <span className="absolute bottom-full mb-2 hidden w-max bg-black text-white text-xs rounded py-1 px-2 group-hover:block">
+                        {approved ? "Disapprove Answer" : "Approve Answer"}
+                      </span>
+                  </h1>
+                </div> 
+                : 
+                <></>
             }
         </div>
     )

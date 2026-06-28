@@ -519,7 +519,7 @@ app.put("/api/questions/:id", (req: any, res: any) => {
           title: req.body.title,
           text: req.body.text,
           topic_id: req.body.topic_id,
-          posted_user_id: req.body.posted_user_id,
+        posted_user_id: req.body.posted_user_id,
           posted_time: req.body.posted_time,
           up_voted_by: req.body.up_voted_by,
           down_voted_by: req.body.down_voted_by, 

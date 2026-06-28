@@ -18,9 +18,7 @@ import { UserAuth } from "@/app/context/AuthContext";
 export default function QuestionCard(props: any) {
   const router = useRouter()
   const toast = useRef<Toast>(null);
-  const questionid : number =  props.questionid;
-  const posted_user :IUser= props.user
-  const logged_in_user = props.logged_in_user
+  const [postedUser,SetPostedUser] = useState<IUser>();
   const [question, setQuestion] = useState<IQuestion>(props.question);
   const [allAnswers, setAllAnswers] = useState<Array<IAnswer>>([]); // az adott kérdéshez a válaszok
   const [loading, setLoading] = useState<boolean>();
@@ -62,6 +60,15 @@ export default function QuestionCard(props: any) {
   };
   
   useEffect(() => {
+    axios.get("api/users/" + question.posted_user_id).then((res) => {
+      const data = res.data;
+      SetPostedUser(data);
+    }).catch((err) =>{
+      showError("Can't get user.");
+    })
+  },[])
+
+  useEffect(() => {
     setLoading(true)
       axios.get("/api/answers").then((res) => {
         const data = res.data;
@@ -72,7 +79,7 @@ export default function QuestionCard(props: any) {
       }).finally(() => 
         setLoading(false)
       )
-  },[,answerFormVisible])
+    },[,answerFormVisible])
   
   function generateAId(): number {
     return allAnswers.length + 1
@@ -85,16 +92,15 @@ export default function QuestionCard(props: any) {
     setShowAsnwers(!showAnswers);
   }
   
-  async function postAnswer(){
-    
-    if (posted_user){
-      
 
+
+  async function postAnswer(){
+    if (postedUser){
       await axios.post("/api/answers",{
         id: generateAId() ,
         text: answerText,
         question_id: question.id,
-        answered_user_id: posted_user.id,
+        answered_user_id: postedUser.id,
         answered_date: new Date(),
         approved: false,
         up_voted_by: [],
@@ -129,7 +135,13 @@ export default function QuestionCard(props: any) {
           <div className="flex flex-row gap-x-6 items-center justify-between px-5 py-4">
               <div className="flex flex-col">
                 <h1 className="font-bold text-2xl text-left">{question.title}</h1>
-                <p>by {posted_user.username}</p>
+                {
+                  postedUser
+                   ?
+                    <p>by {postedUser.username}</p>
+                    : 
+                    <></>
+                }
               </div>
               <div className="self-end font-bold ">
                 <span className="font-normal">Posted time:</span> {getYMDForQuestion()}
@@ -152,7 +164,7 @@ export default function QuestionCard(props: any) {
               (allAnswers.length > 0 ?  (
                 allAnswers.filter((e) => e.question_id == question.id)
                 .slice().sort((a, b) =>   new Date(b.answered_date).getTime() - new Date(a.answered_date).getTime())
-                .map((a) => <Answer answer={a} posted_user={posted_user}/>)
+                .map((a) => <Answer answer={a} posted_user={postedUser}/>)
               
               ) :<></>) : <></>
             }

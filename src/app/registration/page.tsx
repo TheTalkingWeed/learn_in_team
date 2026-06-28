@@ -73,6 +73,20 @@ export default function page() {
     return res;
   }
 
+  function getNextId() : number{
+    let newId = 0;
+
+    axios.get("/api/users").then((res) => {
+      const data = res.data;
+      newId = data.length + 1;
+    })
+    .catch((err) => {
+      showError("Can't get users")
+    })
+
+    return newId;
+  }
+
   const signup = () => {
     if (
       !firstname ||
@@ -101,7 +115,7 @@ export default function page() {
           const user = uc.user;
           axios
             .post("/api/users", {
-              id: user.uid,
+              id: getNextId(),
               email: email,
               first_name: firstname,
               last_name: lastname,
@@ -111,7 +125,7 @@ export default function page() {
               born_date: bornDate,
             })
             .then((res) => {
-              console.log(res);
+              console.log("OK");
             })
             .catch((err) => console.log(err));
         })
@@ -241,7 +255,7 @@ export default function page() {
                     fontWeight: 700,
                   }}
                 ></i>
-                1 Number letter
+                1 Number
               </li>
             </ul>
           </div>

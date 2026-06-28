@@ -43,11 +43,6 @@ export default function Page() {
       finally(() => setLoading(false));
   }, []);
 
-  function getThePostedUser(question: IQuestion): IUser  | undefined{
-    let user : IUser | undefined= {} as IUser;
-    user = users.find((u) => u.id === question.posted_user_id.toString());
-    return user
-  }
   return (
     <div className="w-full min-h-screen bg-purple-100 flex flex-col py-14 gap-y-5 items-center">
       {loading ? (
@@ -56,7 +51,7 @@ export default function Page() {
         <>
           <h1 className="text-4xl font-bold tracking-wider">{topic.title}</h1>
           {questions.map((q) => (
-            <QuestionCard question={q} user={getThePostedUser(q) } logged_in_user={user}/>
+            <QuestionCard question={q} logged_in_user={user}/>
           ))}
         </>
       ) : (

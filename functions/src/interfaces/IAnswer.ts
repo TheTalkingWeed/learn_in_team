@@ -5,6 +5,6 @@ export default interface IAnswer {
   answered_user_id: number;
   answered_date: Date;
   approved: boolean;
-  up_voted_by: Array<string>;
-  down_voted_by: Array<string>;
+  up_voted_by: Array<number>;
+  down_voted_by: Array<number>;
 }
