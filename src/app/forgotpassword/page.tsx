@@ -6,7 +6,7 @@ import { InputText } from "primereact/inputtext";
 import { Toast } from "primereact/toast";
 import React, { useRef, useState } from "react";
 import { auth } from "../firebase";
-export default function page() {
+export default function Page() {
   const [email, setEmail] = useState<string>("");
   const toast = useRef<Toast>(null);
 
@@ -29,14 +29,14 @@ export default function page() {
       });
   }
   return (
-    <div className="min-h-screen w-full flex flex-col items-center  bg-purple-50  ">
+    <div className="min-h-screen w-full flex flex-col items-center px-4 bg-purple-50  ">
       <Toast ref={toast} />
-      <Card title="Type your E-mail" className="flex flex-col mt-32">
+      <Card title="Type your E-mail" className="flex flex-col mt-10 sm:mt-32 w-full max-w-md animate-fade-in-up">
         <InputText
           placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-96 mb-4"
+          className="w-full mb-4"
         />
         <Button
           label="Send email"

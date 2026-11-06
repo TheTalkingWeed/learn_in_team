@@ -1,3 +1,227 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Animations, used as animate-<name> classes. Entrance animations use "backwards" so they
+   don't keep holding their end state, which would block hover effects that move the element. */
+@theme {
+  --animate-fade-in: fade-in 0.4s ease-out backwards;
+  --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-scale-in: scale-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  --animate-slide-down: slide-down 0.25s ease-out backwards;
+  --animate-pop-in: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  --animate-float: float 6s ease-in-out infinite;
+  /* rotating words on the home page (was in tailwind.config.ts, which Tailwind v4 doesn't read) */
+  --animate-wordchange: wordchange 20s infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+  }
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85) translateY(6px);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+  @keyframes wordchange {
+    10% {
+      transform: translateY(-100%);
+    }
+    20% {
+      transform: translateY(-200%);
+    }
+    30% {
+      transform: translateY(-300%);
+    }
+    40% {
+      transform: translateY(-400%);
+    }
+    50% {
+      transform: translateY(-500%);
+    }
+    60% {
+      transform: translateY(-600%);
+    }
+    70% {
+      transform: translateY(-700%);
+    }
+    80% {
+      transform: translateY(-800%);
+    }
+    90% {
+      transform: translateY(-900%);
+    }
+    100% {
+      transform: translateY(-1000%);
+    }
+  }
+}
+
+/* buttons give a little press feedback */
+.p-button {
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s,
+    transform 0.1s;
+}
+.p-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* respect the "reduce motion" system setting */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* IconField/InputIcon styles from the PrimeReact 10 themes, src/theme/theme.css is older and doesn't have them */
+.p-icon-field {
+  position: relative;
+}
+.p-icon-field > .p-input-icon {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.5rem;
+}
+.p-icon-field-left > .p-input-icon:first-of-type {
+  left: 0.75rem;
+  color: #6b7280;
+}
+.p-icon-field-right > .p-input-icon:last-of-type {
+  right: 0.75rem;
+  color: #6b7280;
+}
+.p-icon-field-left > .p-inputtext {
+  padding-left: 2.5rem;
+}
+.p-icon-field-right > .p-inputtext {
+  padding-right: 2.5rem;
+}
+.p-icon-field-left.p-float-label > label {
+  left: 2.5rem;
+}
+
+/* TabView layout styles from the PrimeReact 10 themes, src/theme/theme.css only has the colors.
+   Without them the tabs stack vertically and the ink bar sticks to the bottom of the viewport */
+.p-tabview-nav-container {
+  position: relative;
+}
+.p-tabview-scrollable .p-tabview-nav-container {
+  overflow: hidden;
+}
+.p-tabview-nav-content {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  overscroll-behavior: contain auto;
+  position: relative;
+}
+.p-tabview-nav-content::-webkit-scrollbar {
+  display: none;
+}
+.p-tabview-nav {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+  flex: 1 1 auto;
+}
+.p-tabview-nav-link {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  position: relative;
+  text-decoration: none;
+  overflow: hidden;
+}
+.p-tabview-nav-link:focus,
+.p-tabview-close {
+  z-index: 1;
+}
+.p-tabview-title {
+  line-height: 1;
+  white-space: nowrap;
+}
+.p-tabview-nav-btn {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.p-tabview-nav-prev {
+  left: 0;
+}
+.p-tabview-nav-next {
+  right: 0;
+}
+
+/* phones: PrimeReact parts with fixed sizes */
+@media (max-width: 640px) {
+  /* toasts are 25rem wide by default, wider than many phones */
+  .p-toast {
+    width: auto !important;
+  }
+  .p-toast.p-toast-top-right {
+    top: 1rem !important;
+    left: 1rem !important;
+    right: 1rem !important;
+  }
+  .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    padding: 1rem 0.9rem;
+  }
+  .p-tabview .p-tabview-panels {
+    padding: 0.75rem 0.25rem;
+  }
+  .p-card.p-component {
+    padding: 12px !important;
+  }
+}
+
+/* let the input of the Password component fill its wrapper */
+.p-password > .p-icon-field {
+  flex: 1;
+}
+.p-password .p-password-show-icon,
+.p-password .p-password-hide-icon {
+  cursor: pointer;
+}

@@ -134,7 +134,6 @@ app.get("/api/topics", (req: any, res: any) => {
           response.push({
             id: doc.id,
             title: doc.data().title,
-            parent_id: doc.data().parent_id,
           });
         }
 
@@ -151,6 +150,7 @@ app.get("/api/topics", (req: any, res: any) => {
 
 //Get topic by Id
 app.get("/api/topics/:id", (req: any, res: any) => {
+  console.log("Get topic by Id");
   (async () => {
     try {
       const document = db.collection("topics").doc(req.params.id);
@@ -260,9 +260,8 @@ app.get("/api/questions_by_user/:id", (req: any, res: any) => {
         let docs = querySnapshot.docs;
 
         for (let doc of docs) {
-          if (
-            parseInt(doc.data().posted_user_id) === parseInt(posted_user_id)
-          ) {
+          // user ids are Firebase uids (strings), so compare them as strings
+          if (String(doc.data().posted_user_id) === String(posted_user_id)) {
             response.push({
               id: doc.id,
               title: doc.data().title,
@@ -407,20 +406,22 @@ app.get("/api/users", (req: any, res: any) => {
 });
 
 //Get user by id
-
 app.get("/api/users/:id", (req: any, res: any) => {
-  (async () => {
-    try{
+    (async () => {
+      try{
       const document = db.collection("users").doc(req.params.id);
       let resData = await document.get();
-      let response = resData.data();
+      if (!resData.exists) {
+        return res.status(404).send({ error: "User not found" });
+      }
+      let response = { id: resData.id, ...resData.data() };
       return res.status(200).send(response);
     }catch(error){
       console.log(error);
       return res.status(500).send(error);
     }
+    })();
   });
-});
 //Get user by email
 app.get("/api/user_by_email/:email", async (req: any, res: any) => {
   try {
@@ -525,6 +526,37 @@ app.put("/api/questions/:id", (req: any, res: any) => {
           down_voted_by: req.body.down_voted_by, 
       })
       
+      return res.status(200).send();
+    } catch (error) {
+      console.log(error);
+      return res.status(500).send(error);
+    }
+  })();
+});
+
+//Update user
+app.put("/api/users/:id", (req: any, res: any) => {
+  (async () => {
+    try {
+      const editableFields = [
+        "email",
+        "first_name",
+        "last_name",
+        "username",
+        "title",
+        "gender",
+        "born_date",
+        "profile_picture",
+      ];
+      // only update the fields that were sent
+      let update: any = { id: req.params.id };
+      for (let field of editableFields) {
+        if (req.body[field] !== undefined) update[field] = req.body[field];
+      }
+
+      // merge, so users without a document yet (Google sign in) get one
+      await db.collection("users").doc(req.params.id).set(update, { merge: true });
+
       return res.status(200).send();
     } catch (error) {
       console.log(error);

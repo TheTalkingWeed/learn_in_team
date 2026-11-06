@@ -13,53 +13,77 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
+  User,
 } from "firebase/auth";
 
 import { auth } from "../firebase";
-const AuthContext = createContext<any>(null);
-import { useRouter } from "next/navigation";
-import { useFormState } from "react-dom";
 import IUser from "../../../functions/src/interfaces/IUser";
 import axios from "axios";
+
+interface IAuthContext {
+  user: User | null; // Firebase auth user
+  userInfos: IUser | null; // user data from our database
+  loading: boolean; // true until Firebase restored the session and userInfos is loaded
+  googleSignIn: () => Promise<void>;
+  logOut: () => Promise<void>;
+  refreshUserInfos: () => Promise<void>;
+}
+
+const AuthContext = createContext<IAuthContext | null>(null);
+
+async function fetchUserInfos(uid: string): Promise<IUser | null> {
+  try {
+    const res = await axios.get(`/api/users/${uid}`, { timeout: 10000 });
+    return res.data ? (res.data as IUser) : null;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+}
+
 export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<any>(null);
-  const [userInfos, setUserInfos] = useState<IUser>();
-  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [userInfos, setUserInfos] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  const googleSignIn = () => {
+  const googleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider);
   };
 
-  const logOut = () => {
-    signOut(auth);
+  const logOut = async () => {
+    await signOut(auth);
+  };
+
+  // Reloads userInfos, e.g. after registration created the user document
+  const refreshUserInfos = async () => {
+    if (auth.currentUser) setUserInfos(await fetchUserInfos(auth.currentUser.uid));
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
       setUser(currentUser);
-      // setUserInfos(
-      //   axios.get("/api/users/" + currentUser?.uid)
-
-      // );
-      if (user) {
-        router.push("/profile");
-      } else {
-        router.push("/");
-      }
+      setUserInfos(currentUser ? await fetchUserInfos(currentUser.uid) : null);
+      setLoading(false);
     });
     return () => unsubscribe();
-  }, [user]);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, googleSignIn, logOut }}>
-      {" "}
+    <AuthContext.Provider
+      value={{ user, userInfos, loading, googleSignIn, logOut, refreshUserInfos }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const UserAuth = () => {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+  if (!context)
+    throw new Error("UserAuth must be used inside AuthContextProvider");
+  return context;
 };

@@ -4,18 +4,23 @@ import React, { useEffect, useRef, useState } from "react";
 import "../../styles/registration.css";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
+import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
-import { Checkbox } from "primereact/checkbox";
 import Link from "next/link";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import axios from "axios";
 import { Nullable } from "primereact/ts-helpers";
 import { Calendar } from "primereact/calendar";
 import { Toast } from "primereact/toast";
 import IUser from "../../../functions/src/interfaces/IUser";
-export default function page() {
+import { UserAuth } from "../context/AuthContext";
+import { useRouter } from "next/navigation";
+import FieldError from "@/components/FieldError";
+export default function Page() {
+  const { refreshUserInfos } = UserAuth();
+  const router = useRouter();
   const [firstname, setFirstName] = useState<string>("");
   const [lastname, setLastName] = useState<string>("");
   const [username, setUsername] = useState<string>("");
@@ -23,18 +28,18 @@ export default function page() {
   const [password, setPassword] = useState<string>("");
   const [passwordAgain, setPasswordAgain] = useState<string>("");
   const [title, setTitle] = useState<string>("");
-  const [agreed, setAgreed] = useState<boolean>(false);
   const [bornDate, setBornDate] = useState<Nullable<Date>>(null);
   const [gender, setGender] = useState<string>("");
-  const [longEnough, setLongEnough] = useState<boolean>(false);
-  const [hasUppercase, setHasUppercase] = useState<boolean>(false);
-  const [hasLowercase, setHasLowercase] = useState<boolean>(false);
-  const [hasNumber, setHasNumber] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  // password checklist, calculated from the password on every render
+  const longEnough = password.length >= 8;
+  const hasUppercase = /[A-Z]/.test(password);
+  const hasLowercase = /[a-z]/.test(password);
+  const hasNumber = /[0-9]/.test(password);
   const titles: Array<string> = ["Student", "Teacher"];
   const genders: Array<string> = ["Male", "Female"];
   const toast = useRef<Toast>(null);
   const today: Date = new Date();
-  const authEP = getAuth();
 
   const [users, setUsers] = useState<Array<IUser>>([]);
 
@@ -73,21 +78,9 @@ export default function page() {
     return res;
   }
 
-  function getNextId() : number{
-    let newId = 0;
-
-    axios.get("/api/users").then((res) => {
-      const data = res.data;
-      newId = data.length + 1;
-    })
-    .catch((err) => {
-      showError("Can't get users")
-    })
-
-    return newId;
-  }
-
   const signup = () => {
+    // from now on the empty fields show their error message
+    setSubmitted(true);
     if (
       !firstname ||
       !lastname ||
@@ -98,8 +91,9 @@ export default function page() {
       !title ||
       !gender
     ) {
-      showError("Please fill all fields!");
-    } else if (usernameExits(username)) {
+      return;
+    }
+    if (usernameExits(username)) {
       showError("Username already exists.");
     } else if (bornDate && bornDate.getTime() > today.getTime()) {
       showError("Invalid born date.");
@@ -107,15 +101,13 @@ export default function page() {
       showError("Passwords does't match.");
     } else if (!isValidEmail(email)) {
       showError("Email is not valid.");
-    } else if (!agreed) {
-      showError("Please agree to the terms and conditions.");
     } else {
       createUserWithEmailAndPassword(auth, email, password)
         .then((uc) => {
           const user = uc.user;
           axios
             .post("/api/users", {
-              id: getNextId(),
+              id: user.uid,
               email: email,
               first_name: firstname,
               last_name: lastname,
@@ -124,14 +116,15 @@ export default function page() {
               gender: gender,
               born_date: bornDate,
             })
-            .then((res) => {
-              console.log("OK");
+            .then(async () => {
+              // the auth listener ran before this document existed, so load it now
+              await refreshUserInfos();
+              router.push("/profile");
             })
             .catch((err) => console.log(err));
         })
         .catch((err) => {
           const errorCode = err.code;
-          const errorMessage = err.message;
           if (errorCode === "auth/email-already-in-use")
             showError("Email already in use.");
           else if (errorCode === "auth/invalid-email")
@@ -142,166 +135,183 @@ export default function page() {
     }
   };
 
-  useEffect(() => {
-    checkPassword(password);
-  }, [password]);
-
-  function checkPassword(password: string) {
-    if (password.length >= 8) setLongEnough(true);
-    else setLongEnough(false);
-
-    if (password.match(/[A-Z]/)) setHasUppercase(true);
-    else setHasUppercase(false);
-
-    if (password.match(/[a-z]/)) setHasLowercase(true);
-    else setHasLowercase(false);
-
-    if (password.match(/[0-9]/)) setHasNumber(true);
-    else setHasNumber(false);
-  }
 
   return (
-    <div className="w-full min-h-screen bg-purple-100 flex flex-col items-center py-20">
+    <div className="w-full min-h-screen bg-purple-100 flex flex-col items-center px-4 py-10 sm:py-20 gap-1">
       <Toast ref={toast} />
-      <Card title="Create an account" className="w-fit">
-        <div className="flex flex-row gap-x-5 mb-5">
-          <InputText
-            required
-            placeholder="First name"
-            type="text"
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-          <InputText
-            required
-            placeholder="Last name"
-            type="text"
-            onChange={(e) => setLastName(e.target.value)}
-          />
-        </div>
-        <InputText
-          required
-          placeholder="Username"
-          type="text"
-          className="mb-5"
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <Calendar
-          className="mb-5"
-          placeholder="Borndate"
-          value={bornDate}
-          onChange={(e) => setBornDate(e.value)}
-        />
-        <InputText
-          required
-          placeholder="Email"
-          type="email"
-          className="mb-5"
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <div className="flex flex-col group">
-          <InputText
-            required
-            placeholder="Password"
-            type="password"
-            className="mb-5"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <div className="hidden group-focus-within:block mb-3">
-            <h1 className="font-bold">Your password must contain:</h1>
-            <ul className="ml-4">
-              <li>
-                <i
-                  className={`${
-                    longEnough ? "pi pi-check" : "pi pi-times"
-                  } mr-3 `}
-                  style={{
-                    color: longEnough ? "green" : "red",
-                    fontWeight: 700,
-                  }}
-                ></i>
-                Minimum 8 characters
-              </li>
-              <li>
-                <i
-                  className={`${
-                    hasUppercase ? "pi pi-check" : "pi pi-times"
-                  } mr-3`}
-                  style={{
-                    color: hasUppercase ? "green" : "red",
-                    fontWeight: 700,
-                  }}
-                ></i>
-                1 Upercase letter
-              </li>
-              <li>
-                <i
-                  className={`${
-                    hasLowercase ? "pi pi-check" : "pi pi-times"
-                  } mr-3`}
-                  style={{
-                    color: hasLowercase ? "green" : "red",
-                    fontWeight: 700,
-                  }}
-                ></i>
-                1 Lowercase letter
-              </li>
-              <li>
-                <i
-                  className={`${
-                    hasNumber ? "pi pi-check" : "pi pi-times"
-                  } mr-3`}
-                  style={{
-                    color: hasNumber ? "green" : "red",
-                    fontWeight: 700,
-                  }}
-                ></i>
-                1 Number
-              </li>
-            </ul>
+      <Card title="Create an account" className="w-full max-w-lg animate-fade-in-up">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-5">
+            <div className="flex flex-col gap-1 w-full">
+              <InputText
+                required
+                placeholder="First name"
+                type="text"
+                className="w-full"
+                invalid={submitted && !firstname}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+              <FieldError show={submitted && !firstname} />
+            </div>
+            <div className="flex flex-col gap-1 w-full">
+              <InputText
+                required
+                placeholder="Last name"
+                type="text"
+                className="w-full"
+                invalid={submitted && !lastname}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+              <FieldError show={submitted && !lastname} />
+            </div>
           </div>
-        </div>
-        <InputText
-          required
-          placeholder="Password again"
-          type="password"
-          className="mb-5"
-          onChange={(e) => setPasswordAgain(e.target.value)}
-        />
-
-        <Dropdown
-          value={title}
-          options={titles}
-          className="mb-5"
-          placeholder="Title"
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <Dropdown
-          value={gender}
-          options={genders}
-          className="mb-5"
-          placeholder="Gender"
-          onChange={(e) => setGender(e.target.value)}
-        />
-
-        <div className="flex flex-row ">
-          <Checkbox
-            inputId="agree"
-            checked={agreed}
-            onChange={(e) => setAgreed(!agreed)}
+          <div className="flex flex-col gap-1">
+            <InputText
+              required
+              placeholder="Username"
+              type="text"
+              invalid={submitted && !username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <FieldError show={submitted && !username} />
+          </div>
+          <Calendar
+            className=""
+            placeholder="Borndate"
+            value={bornDate}
+            onChange={(e) => setBornDate(e.value)}
           />
-          <label htmlFor="agree" className="ml-2 mb-5 cursor-pointer">
-            Agree the terms and conditions
-          </label>
+          <div className="flex flex-col gap-1">
+            <InputText
+              required
+              placeholder="Email"
+              type="email"
+              invalid={submitted && !email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <FieldError show={submitted && !email} />
+          </div>
+          <div className="flex flex-col gap-1 group">
+            <Password
+              required
+              placeholder="Password"
+              className="w-full"
+              inputClassName="w-full"
+              value={password}
+              invalid={submitted && !password}
+              onChange={(e) => setPassword(e.target.value)}
+              feedback={false}
+              toggleMask
+            />
+            <FieldError show={submitted && !password} />
+            <div className="hidden group-focus-within:block mb-3">
+              <h1 className="font-bold">Your password must contain:</h1>
+              <ul className="ml-4">
+                <li>
+                  <i
+                    className={`${
+                      longEnough ? "pi pi-check" : "pi pi-times"
+                    } mr-3 `}
+                    style={{
+                      color: longEnough ? "green" : "red",
+                      fontWeight: 700,
+                    }}
+                  ></i>
+                  Minimum 8 characters
+                </li>
+                <li>
+                  <i
+                    className={`${
+                      hasUppercase ? "pi pi-check" : "pi pi-times"
+                    } mr-3`}
+                    style={{
+                      color: hasUppercase ? "green" : "red",
+                      fontWeight: 700,
+                    }}
+                  ></i>
+                  1 Upercase letter
+                </li>
+                <li>
+                  <i
+                    className={`${
+                      hasLowercase ? "pi pi-check" : "pi pi-times"
+                    } mr-3`}
+                    style={{
+                      color: hasLowercase ? "green" : "red",
+                      fontWeight: 700,
+                    }}
+                  ></i>
+                  1 Lowercase letter
+                </li>
+                <li>
+                  <i
+                    className={`${
+                      hasNumber ? "pi pi-check" : "pi pi-times"
+                    } mr-3`}
+                    style={{
+                      color: hasNumber ? "green" : "red",
+                      fontWeight: 700,
+                    }}
+                  ></i>
+                  1 Number
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <Password
+              required
+              placeholder="Password again"
+              className="w-full"
+              inputClassName="w-full"
+              value={passwordAgain}
+              invalid={submitted && !passwordAgain}
+              onChange={(e) => setPasswordAgain(e.target.value)}
+              feedback={false}
+              toggleMask
+            />
+            <FieldError show={submitted && !passwordAgain} />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Dropdown
+              value={title}
+              options={titles}
+              placeholder="Title"
+              invalid={submitted && !title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <FieldError show={submitted && !title} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Dropdown
+              value={gender}
+              options={genders}
+              placeholder="Gender"
+              invalid={submitted && !gender}
+              onChange={(e) => setGender(e.target.value)}
+            />
+            <FieldError show={submitted && !gender} />
+          </div>
+
+          {/* <div className="flex align-items-center">
+            <Checkbox
+              inputId="agree"
+              checked={agreed}
+              onChange={(e) => setAgreed(!agreed)}
+            />
+            <label htmlFor="agree" className="ml-2  cursor-pointer">
+              Agree the terms and conditions
+            </label>
+          </div> */}
+          <Button label="Sign up" className="mb-9" onClick={() => signup()} />
+          <Link
+            href="/login"
+            className=" w-fit mx-auto text-sky-600 hover:text-sky-500 cursor-pointer underline "
+          >
+            Already have an account?
+          </Link>
         </div>
-
-        <Button label="Sign up" className="mb-9" onClick={() => signup()} />
-
-        <Link
-          href="/login"
-          className=" w-fit mx-auto text-sky-600 hover:text-sky-500 cursor-pointer underline "
-        >
-          Already have an account?
-        </Link>
       </Card>
     </div>
   );
